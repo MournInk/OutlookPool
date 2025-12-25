@@ -11,20 +11,32 @@ export function createAccountRoutes(accountStorage: AccountStorage, outlookServi
     res.json(accounts);
   });
 
-  // Get account by ID
+  // Get account by ID (public info only)
   router.get('/:id', (req, res) => {
     const account = accountStorage.getAccountById(req.params.id);
     if (!account) {
       return res.status(404).json({ error: 'Account not found' });
     }
-    res.json(account);
+    // Return only public information
+    const publicAccount = {
+      id: account.id,
+      email: account.email,
+      clientId: account.clientId,
+      lastRefreshed: account.lastRefreshed
+    };
+    res.json(publicAccount);
   });
 
   // Import accounts
   router.post('/import', (req, res) => {
     const { data } = req.body;
-    if (!data) {
-      return res.status(400).json({ error: 'No data provided' });
+    if (!data || typeof data !== 'string') {
+      return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    // Limit data size to 10MB
+    if (data.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Data too large (max 10MB)' });
     }
 
     const result = accountStorage.importAccounts(data);
@@ -95,6 +107,18 @@ export function createAccountRoutes(accountStorage: AccountStorage, outlookServi
   router.post('/email/:accountId/body', async (req, res) => {
     try {
       const { messageId } = req.body;
+      
+      // Validate messageId
+      if (!messageId || typeof messageId !== 'string') {
+        return res.status(400).json({ error: 'Invalid message ID' });
+      }
+
+      // Validate messageId format (should be a GUID-like string)
+      const guidRegex = /^[a-zA-Z0-9_-]+$/;
+      if (!guidRegex.test(messageId)) {
+        return res.status(400).json({ error: 'Invalid message ID format' });
+      }
+
       const account = accountStorage.getAccountById(req.params.accountId);
       
       if (!account) {

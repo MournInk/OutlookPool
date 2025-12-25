@@ -17,7 +17,22 @@ export class AccountStorage {
     try {
       if (fs.existsSync(DATA_FILE)) {
         const data = fs.readFileSync(DATA_FILE, 'utf-8');
-        this.accounts = JSON.parse(data);
+        const parsed = JSON.parse(data);
+        
+        // Validate structure
+        if (Array.isArray(parsed)) {
+          this.accounts = parsed.filter(acc => 
+            acc && 
+            typeof acc === 'object' &&
+            typeof acc.id === 'string' &&
+            typeof acc.email === 'string' &&
+            typeof acc.clientId === 'string' &&
+            typeof acc.refreshToken === 'string'
+          );
+        } else {
+          console.error('Invalid accounts data structure - expected array');
+          this.accounts = [];
+        }
       }
     } catch (error) {
       console.error('Error loading accounts:', error);

@@ -73,9 +73,12 @@ The system automatically refreshes all account tokens every 6 hours. You can als
 
 ## Security Notes
 
-- Store the `data/accounts.json` file securely
+- Store the `data/accounts.json` file securely - it contains sensitive credentials
+- The export function includes passwords and secrets for account portability - handle exported files with care
 - Do not commit sensitive data to version control
 - Use environment variables for sensitive configuration in production
+- Consider implementing encryption at rest for the accounts.json file in production environments
+- The application is designed for trusted environments - implement authentication if exposing to untrusted networks
 
 ## License
 

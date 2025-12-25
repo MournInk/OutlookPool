@@ -99,6 +99,13 @@ export class OutlookService {
 
   async getEmailBody(accessToken: string, messageId: string): Promise<string> {
     try {
+      // Validate messageId format to prevent injection
+      const guidRegex = /^[a-zA-Z0-9_-]+$/;
+      if (!guidRegex.test(messageId)) {
+        console.error('Invalid messageId format');
+        return '';
+      }
+
       const client = Client.init({
         authProvider: (done) => {
           done(null, accessToken);
