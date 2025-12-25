@@ -78,7 +78,10 @@ The system automatically refreshes all account tokens every 6 hours. You can als
 - Do not commit sensitive data to version control
 - Use environment variables for sensitive configuration in production
 - Consider implementing encryption at rest for the accounts.json file in production environments
-- The application is designed for trusted environments - implement authentication if exposing to untrusted networks
+- **The application is designed for trusted local/internal environments**
+  - No authentication is implemented - add authentication middleware if exposing to untrusted networks
+  - No rate limiting is implemented - add rate limiting middleware for production deployments
+  - Consider using a reverse proxy (nginx, Apache) with authentication for production use
 
 ## License
 
