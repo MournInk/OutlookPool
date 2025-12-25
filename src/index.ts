@@ -34,8 +34,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', accounts: accountStorage.getAllAccounts().length });
 });
 
-// Serve index.html for all other routes (SPA support)
-app.get('*', (req, res) => {
+// Serve index.html for the root route
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
