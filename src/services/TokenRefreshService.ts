@@ -37,6 +37,7 @@ export class TokenRefreshService {
       try {
         const tokenResponse = await this.outlookService.refreshAccessToken(
           account.clientId,
+          account.clientSecret,
           account.refreshToken
         );
 

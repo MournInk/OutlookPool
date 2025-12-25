@@ -20,13 +20,14 @@ export interface EmailMessage {
 
 export class OutlookService {
   
-  async refreshAccessToken(clientId: string, refreshToken: string): Promise<TokenResponse | null> {
+  async refreshAccessToken(clientId: string, clientSecret: string, refreshToken: string): Promise<TokenResponse | null> {
     try {
       // Microsoft OAuth2 token endpoint
       const tokenUrl = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
       
       const params = new URLSearchParams();
       params.append('client_id', clientId);
+      params.append('client_secret', clientSecret);
       params.append('refresh_token', refreshToken);
       params.append('grant_type', 'refresh_token');
       params.append('scope', 'https://graph.microsoft.com/Mail.Read offline_access');
@@ -52,9 +53,17 @@ export class OutlookService {
         }
       });
 
+      // Validate folder name to prevent path traversal
+      const ALLOWED_FOLDERS = ['inbox', 'junkemail', 'deleteditems', 'drafts', 'sentitems'];
       let endpoint = '/me/messages?$top=50&$orderby=receivedDateTime DESC';
+      
       if (folderName) {
-        endpoint = `/me/mailFolders/${folderName}/messages?$top=50&$orderby=receivedDateTime DESC`;
+        const normalizedFolder = folderName.toLowerCase();
+        if (!ALLOWED_FOLDERS.includes(normalizedFolder)) {
+          console.warn(`Invalid folder name: ${folderName}`);
+          return [];
+        }
+        endpoint = `/me/mailFolders/${normalizedFolder}/messages?$top=50&$orderby=receivedDateTime DESC`;
       }
 
       const response = await client.api(endpoint).get();

@@ -5,9 +5,9 @@ import { OutlookService } from '../services/OutlookService';
 export function createAccountRoutes(accountStorage: AccountStorage, outlookService: OutlookService) {
   const router = express.Router();
 
-  // Get all accounts
+  // Get all accounts (public info only)
   router.get('/', (req, res) => {
-    const accounts = accountStorage.getAllAccounts();
+    const accounts = accountStorage.getAllAccountsPublic();
     res.json(accounts);
   });
 
@@ -59,6 +59,7 @@ export function createAccountRoutes(accountStorage: AccountStorage, outlookServi
       // Get access token
       const tokenResponse = await outlookService.refreshAccessToken(
         account.clientId,
+        account.clientSecret,
         account.refreshToken
       );
 
@@ -102,6 +103,7 @@ export function createAccountRoutes(accountStorage: AccountStorage, outlookServi
 
       const tokenResponse = await outlookService.refreshAccessToken(
         account.clientId,
+        account.clientSecret,
         account.refreshToken
       );
 

@@ -47,13 +47,15 @@ The application will start on `http://localhost:3000`
 
 Import accounts using the following format (one per line):
 ```
-email----password----client_id----refresh_token
+email----password----client_id----client_secret----refresh_token
 ```
 
 Example:
 ```
-MacyJerde1996@outlook.com----abc123----your-client-id----your-refresh-token
+MacyJerde1996@outlook.com----abc123----your-client-id----your-client-secret----your-refresh-token
 ```
+
+**Note**: Both client_id and client_secret are required for secure OAuth2 token refresh.
 
 ## API Endpoints
 

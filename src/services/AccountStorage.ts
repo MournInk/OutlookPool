@@ -1,9 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import { OutlookAccount, AccountImportFormat } from '../models/Account';
+import { OutlookAccount, AccountImportFormat, AccountPublicInfo } from '../models/Account';
 import { v4 as uuidv4 } from 'uuid';
 
-const DATA_FILE = path.join(__dirname, '../../data/accounts.json');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
+const DATA_FILE = path.join(DATA_DIR, 'accounts.json');
 
 export class AccountStorage {
   private accounts: OutlookAccount[] = [];
@@ -38,6 +39,15 @@ export class AccountStorage {
 
   getAllAccounts(): OutlookAccount[] {
     return this.accounts;
+  }
+
+  getAllAccountsPublic(): AccountPublicInfo[] {
+    return this.accounts.map(acc => ({
+      id: acc.id,
+      email: acc.email,
+      clientId: acc.clientId,
+      lastRefreshed: acc.lastRefreshed
+    }));
   }
 
   getAccountById(id: string): OutlookAccount | undefined {
@@ -88,25 +98,25 @@ export class AccountStorage {
     for (const line of lines) {
       try {
         const parts = line.split('----');
-        if (parts.length !== 4) {
+        if (parts.length !== 5) {
           failed++;
-          errors.push(`Invalid format: ${line}`);
+          errors.push(`Invalid format (expected 5 parts): ${line.substring(0, 50)}...`);
           continue;
         }
 
-        const [email, password, clientId, refreshToken] = parts.map(p => p.trim());
+        const [email, password, clientId, clientSecret, refreshToken] = parts.map(p => p.trim());
         
-        if (!email || !password || !clientId || !refreshToken) {
+        if (!email || !password || !clientId || !clientSecret || !refreshToken) {
           failed++;
-          errors.push(`Missing fields in: ${line}`);
+          errors.push(`Missing fields in: ${line.substring(0, 50)}...`);
           continue;
         }
 
-        this.addAccount({ email, password, clientId, refreshToken });
+        this.addAccount({ email, password, clientId, clientSecret, refreshToken });
         success++;
       } catch (error) {
         failed++;
-        errors.push(`Error processing line: ${line} - ${error}`);
+        errors.push(`Error processing line: ${line.substring(0, 50)}... - ${error}`);
       }
     }
 
@@ -115,7 +125,7 @@ export class AccountStorage {
 
   exportAccounts(): string {
     return this.accounts
-      .map(acc => `${acc.email}----${acc.password}----${acc.clientId}----${acc.refreshToken}`)
+      .map(acc => `${acc.email}----${acc.password}----${acc.clientId}----${acc.clientSecret}----${acc.refreshToken}`)
       .join('\n');
   }
 }
